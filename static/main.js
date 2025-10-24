@@ -5,7 +5,7 @@ function getCookie(name) {
     const cookies = document.cookie.split(";");
     for (let i = 0; i < cookies.length; i++) {
       const cookie = cookies[i].trim();
-      // Does this cookie string begin with the name we want?
+
       if (cookie.substring(0, name.length + 1) === (name + "=")) {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
         break;
@@ -15,18 +15,25 @@ function getCookie(name) {
   return cookieValue;
 }
 
+async function getAllTodos(url) {
+  const todoList = document.getElementById("todoList");
+  todoList.innerHTML = "<li>Cargando tareas...</li>"; 
 
-function getAllTodos(url) {
-  
-  fetch(url, {
-    headers: {
-      "X-Requested-With": "XMLHttpRequest",
+  try {
+
+    const response = await fetch(url, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status} (${response.statusText})`);
     }
-  })
-  .then(response => response.json())
-  .then(data => {
-    const todoList = document.getElementById("todoList");
-    todoList.innerHTML = "";
+
+    const data = await response.json();
+
+    todoList.innerHTML = ""; 
 
     (data.context).forEach(todo => {
       const todoHTMLElement = `
@@ -34,52 +41,39 @@ function getAllTodos(url) {
           <p>Task: ${todo.task}</p>
           <p>Completed?: ${todo.completed}</p>
         </li>`
-        todoList.innerHTML += todoHTMLElement;
+      todoList.innerHTML += todoHTMLElement;
     });
-  });
+
+  } catch (error) {
+    console.error('Error al obtener todas las tareas:', error);
+    todoList.innerHTML = `<li>Error: No se pudo cargar la lista. ${error.message}</li>`;
+  }
 }
 
 
-
-  const operationGetAllTodos = async (url) => {
-       r = await fetch(url, {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-        }
-      })
-
-      dt = await  r.json();
-
-    const todoList = document.getElementById("todoList");
-    todoList.innerHTML = "";
-
-    (dt.context).forEach(todo => {
-      const todoHTMLElement = `
-        <li>
-          <p>Task: ${todo.task}</p>
-          <p>Completed?: ${todo.completed}</p>
-        </li>`
-        todoList.innerHTML += todoHTMLElement;
+async function addTodo(url, payload) {
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": getCookie("csrftoken"), // Descomentar el CSRF
+      },
+      body: JSON.stringify({payload: payload})
     });
 
+    if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+    }
 
-};
+    const data = await response.json();
+    console.log('Tarea agregada exitosamente:', data);
+    // Opcional: Llamar a getAllTodos(url_de_lista) aquí para actualizar la lista.
 
-
-function addTodo(url, payload) {
-  fetch(url, {
-    method: "POST",
-    credentials: "same-origin",
-    headers: {
-      "X-Requested-With": "XMLHttpRequest",
-      // "X-CSRFToken": getCookie("csrftoken"),
-    },
-    body: JSON.stringify({payload: payload})
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log(data);
-  });
+  } catch (error) {
+    console.error('Error al agregar tarea:', error);
+  }
 }
 
 
