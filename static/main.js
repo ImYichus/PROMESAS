@@ -58,7 +58,7 @@ async function addTodo(url, payload) {
       credentials: "same-origin",
       headers: {
         "X-Requested-With": "XMLHttpRequest",
-        "X-CSRFToken": getCookie("csrftoken"), // Descomentar el CSRF
+        "X-CSRFToken": getCookie("csrftoken"), 
       },
       body: JSON.stringify({payload: payload})
     });
@@ -69,7 +69,6 @@ async function addTodo(url, payload) {
 
     const data = await response.json();
     console.log('Tarea agregada exitosamente:', data);
-    // Opcional: Llamar a getAllTodos(url_de_lista) aquí para actualizar la lista.
 
   } catch (error) {
     console.error('Error al agregar tarea:', error);
@@ -77,34 +76,50 @@ async function addTodo(url, payload) {
 }
 
 
-function updateTodo(url, payload) {
-  fetch(url, {
-    method: "PUT",
-    credentials: "same-origin",
-    headers: {
-      "X-Requested-With": "XMLHttpRequest",
-      "X-CSRFToken": getCookie("csrftoken"),
-    },
-    body: JSON.stringify({payload: payload})
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log(data);
-  });
+async function updateTodo(url, payload) {
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      credentials: "same-origin",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({payload: payload})
+    });
+
+    if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Tarea actualizada exitosamente:', data);
+
+  } catch (error) {
+    console.error('Error al actualizar tarea:', error);
+  }
 }
 
 
-function deleteTodo(url) {
-  fetch(url, {
-    method: "DELETE",
-    credentials: "same-origin",
-    headers: {
-      "X-Requested-With": "XMLHttpRequest",
-      "X-CSRFToken": getCookie("csrftoken"),
+async function deleteTodo(url) {
+  try {
+    const response = await fetch(url, {
+      method: "DELETE",
+      credentials: "same-origin",
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        "X-CSRFToken": getCookie("csrftoken"),
+      }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
     }
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log(data);
-  });
+
+    const data = await response.json();
+    console.log('Tarea eliminada exitosamente:', data);
+
+  } catch (error) {
+    console.error('Error al eliminar tarea:', error);
+  }
 }
